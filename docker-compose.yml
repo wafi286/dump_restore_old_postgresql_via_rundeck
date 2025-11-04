@@ -1,0 +1,38 @@
+version: '3.7'
+
+services:
+  # --- Service Rundeck (Votre Orchestrateur) ---
+  rundeck:
+    # Utilisez l'image personnalisée que vous avez créée
+    build: .  # Indique de construire le Dockerfile dans ce dossier
+    # image: mon-rundeck-perso:latest # (Si vous l'avez build et taggée)
+    container_name: rundeck
+    ports:
+      - "4440:4440" # Accès à la Web UI de Rundeck
+    environment:
+      - RUNDECK_GRAILS_URL=http://localhost:4440
+      - RUNDECK_SERVER_FORWARDED=true
+    volumes:
+      - rundeck_data:/home/rundeck/server/data
+      - dumps:/dumps # Un volume pour stocker les dumps temporairement
+
+  # --- Service PG Récent (Votre Destination) ---
+  postgres_recent:
+    image: postgres:15-alpine # Mettez la version récente que vous souhaitez
+    container_name: postgres_recent
+    ports:
+      - "5433:5432" # Port 5433 sur l'hôte
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=votre_mot_de_passe
+      - POSTGRES_DB=nouvelle_db
+    volumes:
+      - pg_recent_data:/var/lib/postgresql/data
+
+volumes:
+  rundeck_data:
+  pg_recent_data:
+  dumps:
+  
+# Note: Votre base 9.2.2 est supposée être "externe" à ce compose
+# et accessible sur le réseau (ex: '192.168.1.10:5432')
